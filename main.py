@@ -22,14 +22,35 @@ import datetime
 import time
 import speech_recognition as sr
 
+with open("intents.json") as file:
+    data = json.load(file)
+
+model = load_model("chat_model.h5")
+
+with open("tokenizer.pkl", "rb") as f:
+    tokenizer=pickle.load(f)
+
+with open("label_encoder.pkl", "rb") as encoder_file:
+    label_encoder=pickle.load(encoder_file)
+
+# def initialize_engine():
+#     engine = pyttsx3.init("sapi5")
+#     voices = engine.getProperty('voices')
+#     engine.setProperty('voice', voices[1].id)
+#     rate = engine.getProperty('rate')
+#     engine.setProperty('rate', rate-50)
+#     volume = engine.getProperty('volume')
+#     engine.setProperty('volume', volume+0.25)
+#     return engine
+
 def speak(text):
     tts = gTTS(text=text, lang='en')
     tts.save("speech.mp3")
     # Phát âm thanh trên các hệ điều hành khác nhau
     if os.name == 'nt':  # Nếu là Windows
         os.system("start speech.mp3")
-    else:  # Nếu là Linux/macOS
-        os.system("afplay speech.mp3")  # Hoặc bạn có thể dùng os.system("afplay speech.mp3") trên macOS
+    else:  # Nếu là macOS
+        os.system("afplay speech.mp3") 
 
 def command():
     r = sr.Recognizer()
@@ -163,7 +184,6 @@ def condition():
 
 if __name__ == "__main__":
     wishMe()
-    # engine_talk("Allow me to introduce myself I am Jarvis, the virtual artificial intelligence and I'm here to assist you with a variety of tasks as best I can, 24 hours a day seven days a week.")
     while True:
         query = command().lower()
         # query  = input("Enter your command-> ")
@@ -184,14 +204,14 @@ if __name__ == "__main__":
             openApp(query)
         elif ("close calculator" in query) or ("close textEdit" in query) or ("close preview" in query):
             closeApp(query)
-        # elif ("what" in query) or ("who" in query) or ("how" in query) or ("hi" in query) or ("thanks" in query) or ("hello" in query):
-        #         padded_sequences = pad_sequences(tokenizer.texts_to_sequences([query]), maxlen=20, truncating='post')
-        #         result = model.predict(padded_sequences)
-        #         tag = label_encoder.inverse_transform([np.argmax(result)])
+        elif ("what" in query) or ("who" in query) or ("how" in query) or ("hi" in query) or ("thanks" in query) or ("hello" in query):
+                padded_sequences = pad_sequences(tokenizer.texts_to_sequences([query]), maxlen=20, truncating='post')
+                result = model.predict(padded_sequences)
+                tag = label_encoder.inverse_transform([np.argmax(result)])
 
-        #         for i in data['intents']:
-        #             if i['tag'] == tag:
-        #                 speak(np.random.choice(i['responses']))
+                for i in data['intents']:
+                    if i['tag'] == tag:
+                        speak(np.random.choice(i['responses']))
         elif ("open google" in query) or ("open edge" in query):
             browsing(query)
         elif ("system condition" in query) or ("condition of the system" in query):
